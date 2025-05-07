@@ -1,28 +1,29 @@
-
 services:  
   db:
     image: mariadb:latest
     container_name: glpi-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: glpi
-      MYSQL_USER: glpi_user
-      MYSQL_PASSWORD: glpi_password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-glpi}
+      MYSQL_USER: ${MYSQL_USER:-glpi_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-glpi_password}
     volumes:
       - db-data:/var/lib/mysql
     ports:
       - "3306:3306"
+    networks:
+      - glpi_network
 
   glpi:
-    image: rosnertech1/glpi:10.0.17
+    build: .
     container_name: glpi-app
     restart: always
     environment:
       DB_HOST: db
-      DB_NAME: glpi
-      DB_USER: glpi_user
-      DB_PASSWORD: glpi_password
+      DB_NAME: ${MYSQL_DATABASE:-glpi}
+      DB_USER: ${MYSQL_USER:-glpi_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-glpi_password}
     volumes:
       - glpi-data:/var/www/html/glpi
     ports:
