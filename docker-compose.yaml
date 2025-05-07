@@ -1,0 +1,60 @@
+
+services:  
+  db:
+    image: mariadb:latest
+    container_name: glpi-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: glpi
+      MYSQL_USER: glpi_user
+      MYSQL_PASSWORD: glpi_password
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  glpi:
+    image: rosnertech1/glpi:10.0.17
+    container_name: glpi-app
+    restart: always
+    environment:
+      DB_HOST: db
+      DB_NAME: glpi
+      DB_USER: glpi_user
+      DB_PASSWORD: glpi_password
+    volumes:
+      - glpi-data:/var/www/html/glpi
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+    networks:
+      - glpi_network
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer_data:/data
+    ports:
+      - "9000:9000"
+    networks:
+      - glpi_network
+
+networks:
+  glpi_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  db-data:
+  glpi-data:
+  portainer_data:
